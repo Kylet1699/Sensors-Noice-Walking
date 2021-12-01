@@ -29,7 +29,13 @@ def plot(data):
 
 def butterworth(data):
     # Numerator(b) and denominator (a) polynomials of the IIR filter
-    b, a = signal.butter(3, 0.1, btype = 'lowpass', analog=False)
+    # fc = cut-off frequency of the filter
+    # fs = sampling frequency (418hz for Galaxy s9)
+    # w = fc/(fs/2)
+    fc = 5
+    fs = 418
+    w = 5/(418/2)
+    b, a = signal.butter(4, w, btype = 'highpass', analog=False)
     # Filter data 
     low_passed = signal.filtfilt(b, a, data['ax'])
     data['butterworth'] = low_passed
@@ -46,7 +52,7 @@ def butterworth(data):
 def vel(data):
     data_shifted = data.shift(1)
     delta_t = data['time'] - data_shifted['time']
-    delta_v = delta_t * data['ax']
+    delta_v = delta_t * data['butterworth']
     delta_v = pd.DataFrame(delta_v, columns=['delta_v'])
     data = data.join(delta_v)
     data['velocity'] = 0
@@ -66,7 +72,7 @@ def main(input_file, output_file):
     data = vel(data)
 
     print(data)
-    print(data['displacement'].sum())
+    print("Distance walked: ", data['displacement'].sum())
 
     plot(data)
     data.to_csv(output_file)
