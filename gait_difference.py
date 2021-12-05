@@ -1,6 +1,5 @@
 import argparse
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal, stats
 
@@ -10,28 +9,29 @@ INPUT:
     arg2: Right leg data csv file with gyroscope data containing columns 'wx', 'wy', 'wz'
 
 OPTIONS:
+    -s, --significance: Specify a significance level
     --plot-raw: Plot a graph of the raw data for both data files
     --plot-filtered: Plot a graph of the filtered data for both data files
 '''
 
 
-def plot_data(left, right, title):
-    # Plot raw data
+def plot_data(left, right, title, range=[0, 2000]):
+    # Create subplot with two plots
     fig, (ax1, ax2) = plt.subplots(1, 2)
     fig.suptitle(title)
     # Left subplot
-    ax1.plot(left['wx'], label='Gyroscope X')
-    ax1.plot(left['wy'], label='Gyroscope Y')
-    ax1.plot(left['wz'], label='Gyroscope Z')
+    ax1.plot(left['wx'], label='X')
+    ax1.plot(left['wy'], label='Y')
+    ax1.plot(left['wz'], label='Z')
     ax1.legend()
-    ax1.set_xlim([0, 2000])
+    ax1.set_xlim(range)
     ax1.set_ylim([-10, 10])
     # Right subplot
-    ax2.plot(right['wx'], label='Gyroscope X')
-    ax2.plot(right['wy'], label='Gyroscope Y')
-    ax2.plot(right['wz'], label='Gyroscope Z')
+    ax2.plot(right['wx'], label='X')
+    ax2.plot(right['wy'], label='Y')
+    ax2.plot(right['wz'], label='Z')
     ax2.legend()
-    ax2.set_xlim([0, 2000])
+    ax2.set_xlim(range)
     ax2.set_ylim([-10, 10])
     plt.show()
 
@@ -49,11 +49,8 @@ def butterworth(data):
     return data
 
 
-def steps_analysis(left, right):
-    # Set significance elvel
-    significance = 0.05
-
-    # Find the peaks above the middle of the data points
+def steps_analysis(left, right, significance):
+    # Find the peaks above the middle of the data
     left_peaks, _ = signal.find_peaks(left, height=left.median())
     right_peaks, _ = signal.find_peaks(right, height=right.median())
 
@@ -71,25 +68,32 @@ def steps_analysis(left, right):
         print('There is no meaningful difference between the step count of the two data sets.')
 
 
-def ttest_analysis(left, right):
-    # Test if data passes normal test and equal variance test
-    # before using the T-test on the two data sets
-    if stats.normaltest(left).pvalue > 0.05 or stats.normaltest(right).pvalue > 0.05:
+def ttest_analysis(left, right, significance):
+    # Test if data passes normal test and equal variance test before using the T-test on the two data sets
+    if stats.normaltest(left).pvalue > significance or stats.normaltest(right).pvalue > significance:
         print('Error: Data is not normally distributed')
         quit()
-    elif (stats.levene(left, right).pvalue > 0.05):
+    elif (stats.levene(left, right).pvalue > significance):
         print('Error: Data is not homoscedastic')
         quit()  
 
     # Perform T-test to determine if the data sets are different
     ttest = stats.ttest_ind(left, right)
-    if ttest.pvalue < 0.05:
+    if ttest.pvalue < significance:
         print('The two data sets pass the t-test.')
     else:
         print('The two data sets do not pass the t-test.')
 
 
-def main(left_input_file, right_input_file, plot_raw, plot_filtered):
+def main(left_input_file, right_input_file, plot_raw, plot_filtered, significance):
+    '''
+    left_input_file (string):  file path to the input file of left leg
+    right_input_file (string): file path to ihe input file of right leg
+    plot_raw (bool):           specify if plot raw data
+    plot_filtered (bool):      specify if plot filtered data
+    significance (float):      the significance level
+    '''
+    
     left_data = pd.read_csv(left_input_file)
     right_data = pd.read_csv(right_input_file)
 
@@ -127,17 +131,18 @@ def main(left_input_file, right_input_file, plot_raw, plot_filtered):
     right_filtered['average'] = (right_filtered['wx'] + right_filtered['wy'] + right_filtered['wz']) / 3
 
     # Perform the tests
-    ttest_analysis(left_filtered['average'], right_filtered['average'])
-    steps_analysis(left_filtered['average'], right_filtered['average'])
+    ttest_analysis(left_filtered['average'], right_filtered['average'], significance)
+    steps_analysis(left_filtered['average'], right_filtered['average'], significance)
 
 
 if __name__ == '__main__':
     # Add option to plot data 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--significance', type=float, default=0.05, help='Significance level between 0 and 1')
     parser.add_argument('--plot-raw', action='store_true', help='Plot raw data')
     parser.add_argument('--plot-filtered', action='store_true', help='Plot filtered data')
     parser.add_argument('left_data_file', help='Left leg csv file with gyroscope data containing columns \'wx\', \'wy\', \'wz\'')
     parser.add_argument('right_data_file', help='Right leg csv file with gyroscope data containing columns \'wx\', \'wy\', \'wz\'')
     args = parser.parse_args()
 
-    main(args.left_data_file, args.right_data_file, args.plot_raw, args.plot_filtered)
+    main(args.left_data_file, args.right_data_file, args.plot_raw, args.plot_filtered, args.significance)
