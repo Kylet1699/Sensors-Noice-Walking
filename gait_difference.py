@@ -38,7 +38,7 @@ def plot_data(left, right, title, range=[0, 2000]):
 
 def butterworth(data):
     w = 5/(418/2)
-    b, a = signal.butter(4, w, btype = 'highpass', analog=False)
+    b, a = signal.butter(5, w, btype = 'highpass', analog=False)
     # Filter data 
     low_passed_x = signal.filtfilt(b, a, data['wx'])
     low_passed_y = signal.filtfilt(b, a, data['wy'])
