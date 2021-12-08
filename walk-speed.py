@@ -38,7 +38,7 @@ def butterworth(data):
     # fc = cut-off frequency of the filter
     # fs = sampling frequency (418hz for Galaxy s9)
     # w = fc/(fs/2)
-    fc = 4
+    fc = 5
     fs = 418
     w = fc/(fs/2)
     b, a = signal.butter(fc, w, btype = 'highpass', analog=False)
