@@ -93,8 +93,8 @@ def main(input1, input2):
 
     plot(left_filtered, 'Left')
     plot(right_filtered, 'Right')
-    left_filtered.to_csv(input1 + '-output')
-    right_filtered.to_csv(input1 + '-output')
+    left_filtered.to_csv(input1 + '-walk-speed')
+    right_filtered.to_csv(input2 + '-walk-speed')
 
 
 if __name__ == '__main__':
