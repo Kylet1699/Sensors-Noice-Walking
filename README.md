@@ -43,6 +43,10 @@ Required libraries: `matplotlib`, `pandas`, `scipy`, `sys`
 $ python3 gait_difference.py [LEFT LEG DATA] [RIGHT LEG DATA]
 ```
 
+### Output
+
+Message printed on the terminal that indicates whether or not the data sets pass the T-test or not, and if the step count difference is within the significance level (default: 0.05).
+
 #### Example
 
 ```
