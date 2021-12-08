@@ -21,9 +21,11 @@ Input:
 - argv[0]: walk-speed.py  
 - argv[1]: left leg data  
 - argv[2]: right leg data  
+  
 Output:  
 - Individual output files with suffix '-walk-speed' for left and right containing 'time', 'ax', 'butterworth', 'delta_v', 'velocity', 'displacement'  
 - *output files are placed under data folder*  
+  
 Example command:  
 - %run walk-speed.py data/left_ankle_3min.csv data/right_ankle_3min.csv  
 
